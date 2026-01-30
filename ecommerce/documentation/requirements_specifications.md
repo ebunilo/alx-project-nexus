@@ -51,7 +51,7 @@ PUT    /api/users/profile/
 
 ### **Validation Rules:**
 
-```python
+```json
 # Pydantic/DRF Serializer validations
 {
     "email": {
