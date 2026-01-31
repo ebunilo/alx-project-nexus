@@ -1,6 +1,6 @@
-# Complete SQL CREATE TABLE Statements with Optimization
+-- Complete SQL CREATE TABLE Statements with Optimization
 
-## **1. Core User Management Tables**
+-- 1. Core User Management Tables**
 
 
 -- ============================================
