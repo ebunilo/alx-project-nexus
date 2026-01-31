@@ -65,7 +65,7 @@ ROOT_URLCONF = 'ecommerce.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -138,6 +138,15 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# Directory where collectstatic will store static files
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Optional: Additional directories for static files
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+
 # Custom user model
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -149,9 +158,25 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=120),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header",
+        }
+    },
+    "USE_SESSION_AUTH": False,
+    "JSON_EDITOR": True,
+}
+
+REDOC_SETTINGS = {
+    "LAZY_RENDERING": True,
 }

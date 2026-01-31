@@ -10,6 +10,7 @@ from django.core.mail import send_mail
 User = get_user_model()
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, validators=[validate_password])
 
     class Meta:
@@ -17,6 +18,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 'role']
 
     def create(self, validated_data):
+        # Remove username if it's blank
+        if not validated_data.get('username'):
+            validated_data['username'] = validated_data['email']
         user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
