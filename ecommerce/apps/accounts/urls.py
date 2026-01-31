@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     UserRegistrationView, UserLoginView, PasswordResetView, PasswordResetConfirmView,
-    UserProfileView, AddressListCreateView, AddressDetailView
+    UserProfileView, AddressListCreateView, AddressDetailView, AllUsersView
 )
 
 urlpatterns = [
@@ -15,4 +15,5 @@ urlpatterns = [
     path('users/profile/', UserProfileView.as_view(), name='user-profile'),
     path('users/addresses/', AddressListCreateView.as_view(), name='address-list-create'),
     path('users/addresses/<uuid:pk>/', AddressDetailView.as_view(), name='address-detail'),
+    path('users/all/', AllUsersView.as_view(), name='all_users'),
 ]

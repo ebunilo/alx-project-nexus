@@ -5,9 +5,11 @@ from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserLoginSerializer
-from rest_framework.permissions import IsAuthenticated
-from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from django.contrib.auth import authenticate, get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+
+User = get_user_model()
 
 class UserRegistrationView(APIView):
     """
@@ -182,8 +184,11 @@ class UserProfileView(APIView):
         """
         Update the authenticated user's profile.
         """
-        # Your existing implementation
-        pass
+        serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AddressListCreateView(APIView):
@@ -278,3 +283,15 @@ class AddressDetailView(APIView):
         """
         # Your existing implementation
         pass
+
+
+class AllUsersView(APIView):
+    """
+    Retrieve all user profiles (Admin only).
+    """
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserProfileSerializer(users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
