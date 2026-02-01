@@ -8,6 +8,7 @@ from .serializers import UserRegistrationSerializer, UserProfileSerializer, User
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
+from .tasks import send_password_reset_email
 
 User = get_user_model()
 
@@ -92,27 +93,28 @@ class PasswordResetView(APIView):
     Handles password reset requests.
     """
 
-    @swagger_auto_schema(
-        operation_summary="Request a password reset",
-        operation_description="Send a password reset email to the user.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email address"),
-            },
-            required=["email"],
-        ),
-        responses={
-            200: openapi.Response("Password reset email sent"),
-            404: openapi.Response("User not found"),
-        },
-    )
     def post(self, request):
         """
-        Send a password reset email.
+        Send a password reset email to the user.
         """
-        # Your existing implementation
-        pass
+        email = request.data.get("email")
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "No user is associated with this email."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generate password reset token
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"https://example.com/reset-password/{uid}/{token}/"
+
+        # Send the email asynchronously using Celery
+        send_password_reset_email.delay(email, reset_url)
+
+        return Response({"detail": "Password reset email sent."}, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmView(APIView):
