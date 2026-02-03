@@ -1,3 +1,7 @@
+"""
+This module defines API views for the accounts app.
+"""
+
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,7 +18,10 @@ User = get_user_model()
 
 class UserRegistrationView(APIView):
     """
-    Handles user registration.
+    API view for user registration.
+
+    Methods:
+        post: Handles user registration requests.
     """
 
     @swagger_auto_schema(
@@ -49,7 +56,10 @@ class UserRegistrationView(APIView):
 
 class UserLoginView(APIView):
     """
-    Handles user login.
+    API view for user login.
+
+    Methods:
+        post: Handles user login requests.
     """
 
     @swagger_auto_schema(
@@ -90,7 +100,10 @@ class UserLoginView(APIView):
 
 class PasswordResetView(APIView):
     """
-    Handles password reset requests.
+    API view for password reset requests.
+
+    Methods:
+        post: Sends a password reset email to the user.
     """
 
     def post(self, request):
@@ -119,7 +132,10 @@ class PasswordResetView(APIView):
 
 class PasswordResetConfirmView(APIView):
     """
-    Handles password reset confirmation.
+    API view for password reset confirmation.
+
+    Methods:
+        post: Resets the user's password using a token.
     """
 
     @swagger_auto_schema(
@@ -148,7 +164,11 @@ class PasswordResetConfirmView(APIView):
 
 class UserProfileView(APIView):
     """
-    Handles user profile retrieval and updates.
+    API view for user profile retrieval and updates.
+
+    Methods:
+        get: Retrieves the authenticated user's profile.
+        put: Updates the authenticated user's profile.
     """
     permission_classes = [IsAuthenticated]
 
@@ -195,7 +215,11 @@ class UserProfileView(APIView):
 
 class AddressListCreateView(APIView):
     """
-    Handles listing and creating user addresses.
+    API view for listing and creating user addresses.
+
+    Methods:
+        get: Retrieves all addresses for the authenticated user.
+        post: Creates a new address for the authenticated user.
     """
 
     @swagger_auto_schema(
@@ -230,7 +254,12 @@ class AddressListCreateView(APIView):
 
 class AddressDetailView(APIView):
     """
-    Handles retrieving, updating, and deleting a specific address.
+    API view for retrieving, updating, and deleting a specific address.
+
+    Methods:
+        get: Retrieves a specific address.
+        put: Updates a specific address.
+        delete: Deletes a specific address.
     """
 
     @swagger_auto_schema(
@@ -289,7 +318,10 @@ class AddressDetailView(APIView):
 
 class AllUsersView(APIView):
     """
-    Retrieve all user profiles (Admin only).
+    API view for retrieving all user profiles (Admin only).
+
+    Methods:
+        get: Retrieves all user profiles.
     """
     permission_classes = [IsAdminUser]
 

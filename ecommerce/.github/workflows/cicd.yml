@@ -16,8 +16,9 @@ jobs:
       EMAIL_HOST_USER: ${{ secrets.EMAIL_HOST_USER }}
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-      POSTGRES_DB: ecommerce_db
-      POSTGRES_HOST: 37.60.239.12
+      POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+      POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
       REDIS_PORT: 6380
       CELERY_BROKER_URL: redis://redis:6380/0
       CELERY_RESULT_BACKEND: redis://redis:6380/0
@@ -42,6 +43,23 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build -t ecommerce-app .
+
+      - name: Run Linting
+        run: |
+          pip install flake8
+          flake8 apps/ ecommerce/ --max-line-length=120 --exclude=migrations,__pycache__ --ignore=E501,W503
+
+      - name: Run Tests
+        run: |
+          pip install pytest pytest-django
+          python manage.py test apps/ --verbosity=2
+        env:
+          DJANGO_SETTINGS_MODULE: ecommerce.settings
+          DB_NAME: ${{ env.POSTGRES_DB }}
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          DB_HOST: ${{ env.POSTGRES_HOST }}
+          DB_PORT: ${{ env.POSTGRES_PORT }}
 
       - name: Copy Docker Compose File to Server
         uses: appleboy/scp-action@v0.1.8
