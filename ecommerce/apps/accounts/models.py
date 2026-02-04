@@ -32,7 +32,13 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['first_name', 'last_name']
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Return the string representation of the user.
+
+        Returns:
+            str: The username of the user.
+        """
         return self.username
 
 class Country(models.Model):
@@ -55,7 +61,13 @@ class Country(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Return the string representation of the country.
+
+        Returns:
+            str: The name of the country.
+        """
         return self.name
 
 class Address(models.Model):
@@ -93,5 +105,11 @@ class Address(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """
+        Return the string representation of the address.
+
+        Returns:
+            str: A description of the address type and associated user.
+        """
         return f"{self.address_type} address for {self.user.username}"

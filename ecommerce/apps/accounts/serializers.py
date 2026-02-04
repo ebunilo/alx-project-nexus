@@ -2,6 +2,8 @@
 This module defines serializers for the accounts app.
 """
 
+from typing import Any, Dict
+
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -29,12 +31,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'email', 'password', 'first_name', 'last_name', 'role']
 
-    def create(self, validated_data):
+    def create(self, validated_data: Dict[str, Any]) -> Any:
         """
         Create and return a new user instance.
 
         Args:
-            validated_data (dict): Validated data from the serializer.
+            validated_data (Dict[str, Any]): Validated data from the
+                serializer.
 
         Returns:
             User: The newly created user instance.
@@ -74,7 +77,7 @@ class PasswordResetSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
 
-    def validate_email(self, value):
+    def validate_email(self, value: str) -> str:
         """
         Validate that the email exists in the database.
 
@@ -91,11 +94,12 @@ class PasswordResetSerializer(serializers.Serializer):
             raise serializers.ValidationError(_('No user is associated with this email.'))
         return value
 
-    def save(self):
+    def save(self) -> None:
         """
         Send a password reset email to the user.
 
-        Generates a password reset token and sends an email with the reset link.
+        Generates a password reset token and sends an email
+        with the reset link.
         """
         email = self.validated_data['email']
         user = User.objects.get(email=email)
@@ -122,15 +126,15 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     token = serializers.CharField()
     user_id = serializers.IntegerField()
 
-    def validate(self, attrs):
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate the password reset token.
 
         Args:
-            attrs (dict): The attributes to validate.
+            attrs (Dict[str, Any]): The attributes to validate.
 
         Returns:
-            dict: The validated attributes.
+            Dict[str, Any]: The validated attributes.
 
         Raises:
             ValidationError: If the token is invalid or expired.
@@ -140,7 +144,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             raise serializers.ValidationError(_('Invalid or expired token.'))
         return attrs
 
-    def save(self):
+    def save(self) -> None:
         """
         Save the new password for the user.
 

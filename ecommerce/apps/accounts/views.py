@@ -2,7 +2,7 @@
 This module defines API views for the accounts app.
 """
 
-from django.shortcuts import render
+from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -43,9 +43,15 @@ class UserRegistrationView(APIView):
             400: openapi.Response("Validation error"),
         },
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Register a new user.
+
+        Args:
+            request (Request): The HTTP request containing user data.
+
+        Returns:
+            Response: HTTP response with user data or validation errors.
         """
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -78,9 +84,15 @@ class UserLoginView(APIView):
             401: openapi.Response("Invalid credentials"),
         },
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Log in a user and return a JWT token.
+
+        Args:
+            request (Request): The HTTP request containing login credentials.
+
+        Returns:
+            Response: HTTP response with JWT tokens or error message.
         """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -106,9 +118,15 @@ class PasswordResetView(APIView):
         post: Sends a password reset email to the user.
     """
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Send a password reset email to the user.
+
+        Args:
+            request (Request): The HTTP request containing the user's email.
+
+        Returns:
+            Response: HTTP response indicating email sent or error.
         """
         email = request.data.get("email")
         if not email:
@@ -154,9 +172,15 @@ class PasswordResetConfirmView(APIView):
             400: openapi.Response("Invalid token or password"),
         },
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Reset the user's password.
+
+        Args:
+            request (Request): The HTTP request containing token and password.
+
+        Returns:
+            Response: HTTP response indicating success or failure.
         """
         # Your existing implementation
         pass
@@ -179,9 +203,15 @@ class UserProfileView(APIView):
             200: openapi.Response("User profile retrieved successfully"),
         },
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         """
         Retrieve the authenticated user's profile.
+
+        Args:
+            request (Request): The HTTP request from authenticated user.
+
+        Returns:
+            Response: HTTP response with user profile data.
         """
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -202,9 +232,15 @@ class UserProfileView(APIView):
             400: openapi.Response("Validation error"),
         },
     )
-    def put(self, request):
+    def put(self, request: Request) -> Response:
         """
         Update the authenticated user's profile.
+
+        Args:
+            request (Request): The HTTP request with updated profile data.
+
+        Returns:
+            Response: HTTP response with updated data or errors.
         """
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
@@ -237,16 +273,28 @@ class AddressListCreateView(APIView):
             200: openapi.Response("Addresses retrieved successfully"),
         },
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         """
         List all addresses for the authenticated user.
+
+        Args:
+            request (Request): The HTTP request from authenticated user.
+
+        Returns:
+            Response: HTTP response with list of addresses.
         """
         # Your existing implementation
         pass
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Create a new address for the authenticated user.
+
+        Args:
+            request (Request): The HTTP request with address data.
+
+        Returns:
+            Response: HTTP response with created address or errors.
         """
         # Your existing implementation
         pass
@@ -270,9 +318,16 @@ class AddressDetailView(APIView):
             404: openapi.Response("Address not found"),
         },
     )
-    def get(self, request, pk):
+    def get(self, request: Request, pk: str) -> Response:
         """
         Retrieve a specific address.
+
+        Args:
+            request (Request): The HTTP request.
+            pk (str): The primary key of the address.
+
+        Returns:
+            Response: HTTP response with address data or not found.
         """
         # Your existing implementation
         pass
@@ -293,9 +348,16 @@ class AddressDetailView(APIView):
             400: openapi.Response("Validation error"),
         },
     )
-    def put(self, request, pk):
+    def put(self, request: Request, pk: str) -> Response:
         """
         Update a specific address.
+
+        Args:
+            request (Request): The HTTP request with updated data.
+            pk (str): The primary key of the address.
+
+        Returns:
+            Response: HTTP response with updated data or errors.
         """
         # Your existing implementation
         pass
@@ -308,9 +370,16 @@ class AddressDetailView(APIView):
             404: openapi.Response("Address not found"),
         },
     )
-    def delete(self, request, pk):
+    def delete(self, request: Request, pk: str) -> Response:
         """
         Delete a specific address.
+
+        Args:
+            request (Request): The HTTP request.
+            pk (str): The primary key of the address.
+
+        Returns:
+            Response: HTTP response indicating success or not found.
         """
         # Your existing implementation
         pass
@@ -325,7 +394,16 @@ class AllUsersView(APIView):
     """
     permission_classes = [IsAdminUser]
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
+        """
+        Retrieve all user profiles.
+
+        Args:
+            request (Request): The HTTP request from admin user.
+
+        Returns:
+            Response: HTTP response with all user profiles.
+        """
         users = User.objects.all()
         serializer = UserProfileSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
