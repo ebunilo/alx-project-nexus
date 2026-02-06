@@ -188,8 +188,8 @@ REDOC_SETTINGS = {
 CHAPA_SECRET_KEY=env('CHAPA_SECRET_KEY', default='CHASECK_TEST-jqv5mCEnhgE6PNdTZoBN1zBVHPqTfh')
 
 # Celery settings
-CELERY_BROKER_URL = env('CELERY_BROKER_URL', default=f'redis://redis:{env("REDIS_PORT", default=6379)}/0')
-CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default=f'redis://redis:{env("REDIS_PORT", default=6379)}/0')
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://redis:6379/0')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='redis://redis:6379/0')
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
