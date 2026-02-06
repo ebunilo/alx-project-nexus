@@ -38,6 +38,9 @@ RUN useradd -m appuser && \
 RUN mkdir -p /app/staticfiles /app/media && \
     chown -R appuser:appuser /app/staticfiles /app/media
 
+# Ensure proper permissions for staticfiles and media directories
+RUN chmod -R 755 /app/staticfiles /app/media
+
 # Run the container as the unprivileged appuser
 USER appuser
 
