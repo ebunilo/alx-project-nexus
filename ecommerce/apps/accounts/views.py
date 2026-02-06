@@ -1,4 +1,8 @@
-from django.shortcuts import render
+"""
+This module defines API views for the accounts app.
+"""
+
+from rest_framework.request import Request
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -7,13 +11,21 @@ from drf_yasg import openapi
 from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserLoginSerializer
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
+from .tasks import send_password_reset_email
 
 User = get_user_model()
 
 class UserRegistrationView(APIView):
     """
-    Handles user registration.
+    API view for user registration.
+
+    Methods:
+        post: Handles user registration requests.
     """
 
     @swagger_auto_schema(
@@ -35,9 +47,15 @@ class UserRegistrationView(APIView):
             400: openapi.Response("Validation error"),
         },
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Register a new user.
+
+        Args:
+            request (Request): The HTTP request containing user data.
+
+        Returns:
+            Response: HTTP response with user data or validation errors.
         """
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -48,7 +66,10 @@ class UserRegistrationView(APIView):
 
 class UserLoginView(APIView):
     """
-    Handles user login.
+    API view for user login.
+
+    Methods:
+        post: Handles user login requests.
     """
 
     @swagger_auto_schema(
@@ -67,9 +88,15 @@ class UserLoginView(APIView):
             401: openapi.Response("Invalid credentials"),
         },
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Log in a user and return a JWT token.
+
+        Args:
+            request (Request): The HTTP request containing login credentials.
+
+        Returns:
+            Response: HTTP response with JWT tokens or error message.
         """
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -89,35 +116,48 @@ class UserLoginView(APIView):
 
 class PasswordResetView(APIView):
     """
-    Handles password reset requests.
+    API view for password reset requests.
+
+    Methods:
+        post: Sends a password reset email to the user.
     """
 
-    @swagger_auto_schema(
-        operation_summary="Request a password reset",
-        operation_description="Send a password reset email to the user.",
-        request_body=openapi.Schema(
-            type=openapi.TYPE_OBJECT,
-            properties={
-                "email": openapi.Schema(type=openapi.TYPE_STRING, description="User's email address"),
-            },
-            required=["email"],
-        ),
-        responses={
-            200: openapi.Response("Password reset email sent"),
-            404: openapi.Response("User not found"),
-        },
-    )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
-        Send a password reset email.
+        Send a password reset email to the user.
+
+        Args:
+            request (Request): The HTTP request containing the user's email.
+
+        Returns:
+            Response: HTTP response indicating email sent or error.
         """
-        # Your existing implementation
-        pass
+        email = request.data.get("email")
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({"detail": "No user is associated with this email."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Generate password reset token
+        token = default_token_generator.make_token(user)
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
+
+        # Send the email asynchronously using Celery
+        send_password_reset_email.delay(email, reset_url)
+
+        return Response({"detail": "Password reset email sent."}, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmView(APIView):
     """
-    Handles password reset confirmation.
+    API view for password reset confirmation.
+
+    Methods:
+        post: Resets the user's password using a token.
     """
 
     @swagger_auto_schema(
@@ -136,9 +176,15 @@ class PasswordResetConfirmView(APIView):
             400: openapi.Response("Invalid token or password"),
         },
     )
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Reset the user's password.
+
+        Args:
+            request (Request): The HTTP request containing token and password.
+
+        Returns:
+            Response: HTTP response indicating success or failure.
         """
         # Your existing implementation
         pass
@@ -146,7 +192,11 @@ class PasswordResetConfirmView(APIView):
 
 class UserProfileView(APIView):
     """
-    Handles user profile retrieval and updates.
+    API view for user profile retrieval and updates.
+
+    Methods:
+        get: Retrieves the authenticated user's profile.
+        put: Updates the authenticated user's profile.
     """
     permission_classes = [IsAuthenticated]
 
@@ -157,9 +207,15 @@ class UserProfileView(APIView):
             200: openapi.Response("User profile retrieved successfully"),
         },
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         """
         Retrieve the authenticated user's profile.
+
+        Args:
+            request (Request): The HTTP request from authenticated user.
+
+        Returns:
+            Response: HTTP response with user profile data.
         """
         serializer = UserProfileSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -180,9 +236,15 @@ class UserProfileView(APIView):
             400: openapi.Response("Validation error"),
         },
     )
-    def put(self, request):
+    def put(self, request: Request) -> Response:
         """
         Update the authenticated user's profile.
+
+        Args:
+            request (Request): The HTTP request with updated profile data.
+
+        Returns:
+            Response: HTTP response with updated data or errors.
         """
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
@@ -193,7 +255,11 @@ class UserProfileView(APIView):
 
 class AddressListCreateView(APIView):
     """
-    Handles listing and creating user addresses.
+    API view for listing and creating user addresses.
+
+    Methods:
+        get: Retrieves all addresses for the authenticated user.
+        post: Creates a new address for the authenticated user.
     """
 
     @swagger_auto_schema(
@@ -211,16 +277,28 @@ class AddressListCreateView(APIView):
             200: openapi.Response("Addresses retrieved successfully"),
         },
     )
-    def get(self, request):
+    def get(self, request: Request) -> Response:
         """
         List all addresses for the authenticated user.
+
+        Args:
+            request (Request): The HTTP request from authenticated user.
+
+        Returns:
+            Response: HTTP response with list of addresses.
         """
         # Your existing implementation
         pass
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         """
         Create a new address for the authenticated user.
+
+        Args:
+            request (Request): The HTTP request with address data.
+
+        Returns:
+            Response: HTTP response with created address or errors.
         """
         # Your existing implementation
         pass
@@ -228,7 +306,12 @@ class AddressListCreateView(APIView):
 
 class AddressDetailView(APIView):
     """
-    Handles retrieving, updating, and deleting a specific address.
+    API view for retrieving, updating, and deleting a specific address.
+
+    Methods:
+        get: Retrieves a specific address.
+        put: Updates a specific address.
+        delete: Deletes a specific address.
     """
 
     @swagger_auto_schema(
@@ -239,9 +322,16 @@ class AddressDetailView(APIView):
             404: openapi.Response("Address not found"),
         },
     )
-    def get(self, request, pk):
+    def get(self, request: Request, pk: str) -> Response:
         """
         Retrieve a specific address.
+
+        Args:
+            request (Request): The HTTP request.
+            pk (str): The primary key of the address.
+
+        Returns:
+            Response: HTTP response with address data or not found.
         """
         # Your existing implementation
         pass
@@ -262,9 +352,16 @@ class AddressDetailView(APIView):
             400: openapi.Response("Validation error"),
         },
     )
-    def put(self, request, pk):
+    def put(self, request: Request, pk: str) -> Response:
         """
         Update a specific address.
+
+        Args:
+            request (Request): The HTTP request with updated data.
+            pk (str): The primary key of the address.
+
+        Returns:
+            Response: HTTP response with updated data or errors.
         """
         # Your existing implementation
         pass
@@ -277,9 +374,16 @@ class AddressDetailView(APIView):
             404: openapi.Response("Address not found"),
         },
     )
-    def delete(self, request, pk):
+    def delete(self, request: Request, pk: str) -> Response:
         """
         Delete a specific address.
+
+        Args:
+            request (Request): The HTTP request.
+            pk (str): The primary key of the address.
+
+        Returns:
+            Response: HTTP response indicating success or not found.
         """
         # Your existing implementation
         pass
@@ -287,11 +391,23 @@ class AddressDetailView(APIView):
 
 class AllUsersView(APIView):
     """
-    Retrieve all user profiles (Admin only).
+    API view for retrieving all user profiles (Admin only).
+
+    Methods:
+        get: Retrieves all user profiles.
     """
     permission_classes = [IsAdminUser]
 
-    def get(self, request):
+    def get(self, request: Request) -> Response:
+        """
+        Retrieve all user profiles.
+
+        Args:
+            request (Request): The HTTP request from admin user.
+
+        Returns:
+            Response: HTTP response with all user profiles.
+        """
         users = User.objects.all()
         serializer = UserProfileSerializer(users, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
