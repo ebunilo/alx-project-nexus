@@ -2,7 +2,7 @@
 set -e
 
 # If this is a celery worker, skip permission fixes for faster startup
-if [ $# -gt 0 ] && [ "$1" = "celery" ] && echo "$*" | grep -q "worker"; then
+if [ $# -gt 0 ] && [ "$1" = "celery" ] && echo "$*" | grep -qw "worker"; then
     echo "Running celery worker: $*"
     exec gosu appuser "$@"
 fi
