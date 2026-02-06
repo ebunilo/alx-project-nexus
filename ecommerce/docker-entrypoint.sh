@@ -1,17 +1,18 @@
 #!/bin/bash
 set -e
 
-# Fix permissions for bind-mounted directories (runs as root)
-echo "Setting ownership for staticfiles and media directories..."
-chown -R appuser:appuser /app/staticfiles /app/media
-find /app/staticfiles /app/media -type d -exec chmod 755 {} \;
-find /app/staticfiles /app/media -type f -exec chmod 644 {} \;
-
-# If a command is passed, run it as appuser
+# If a command is passed, run it as appuser (skip permission fixes)
 if [ $# -gt 0 ]; then
     echo "Running custom command: $1"
     exec gosu appuser "$@"
 fi
+
+# Fix permissions for bind-mounted directories (runs as root)
+# Only needed for the default web process
+echo "Setting ownership for staticfiles and media directories..."
+chown -R appuser:appuser /app/staticfiles /app/media
+find /app/staticfiles /app/media -type d -exec chmod 755 {} \;
+find /app/staticfiles /app/media -type f -exec chmod 644 {} \;
 
 # Otherwise, run the default Django setup and start Gunicorn
 # Run migrations and collect static files as appuser
