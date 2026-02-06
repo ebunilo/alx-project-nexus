@@ -185,7 +185,7 @@ REDOC_SETTINGS = {
     "LAZY_RENDERING": True,
 }
 
-CHAPA_SECRET_KEY=env('CHAPA_SECRET_KEY')
+CHAPA_SECRET_KEY=env('CHAPA_SECRET_KEY', default='CHASECK_TEST-jqv5mCEnhgE6PNdTZoBN1zBVHPqTfh')
 
 # Celery settings
 CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://redis:6380/0')
@@ -197,7 +197,7 @@ CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default='django-db')
 
 # Email settings
 EMAIL_BACKEND = env('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST = env('EMAIL_HOST')
+EMAIL_HOST = env('EMAIL_HOST', default='smtp.example.com')
 EMAIL_PORT = env.int('EMAIL_PORT', default=587)
 EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER', default='')
