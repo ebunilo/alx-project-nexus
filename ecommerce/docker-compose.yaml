@@ -62,7 +62,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-ecommerce_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ecommerce_pass}
     ports:
-      - "${POSTGRES_HOST_PORT:-5432}:5432"
+      - "${POSTGRES_HOST_PORT:-5432}:${POSTGRES_PORT:-5432}"
     healthcheck:
       test:
         [
