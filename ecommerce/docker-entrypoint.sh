@@ -4,7 +4,8 @@ set -e
 # Fix permissions for bind-mounted directories (runs as root)
 echo "Setting ownership for staticfiles and media directories..."
 chown -R appuser:appuser /app/staticfiles /app/media
-chmod -R 755 /app/staticfiles /app/media
+find /app/staticfiles /app/media -type d -exec chmod 755 {} \;
+find /app/staticfiles /app/media -type f -exec chmod 644 {} \;
 
 # Run migrations and collect static files as appuser
 echo "Running database migrations..."
