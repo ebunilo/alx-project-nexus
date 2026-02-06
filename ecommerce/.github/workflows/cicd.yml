@@ -40,10 +40,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r ecommerce/requirements.txt
 
-      - name: Build Docker Image
-        run: |
-          docker build -t ecommerce-app .
-
       - name: Run Linting
         run: |
           pip install flake8
@@ -55,25 +51,27 @@ jobs:
           python manage.py test apps/ --verbosity=2
         env:
           DJANGO_SETTINGS_MODULE: ecommerce.settings
-          DB_NAME: ${{ env.POSTGRES_DB }}
-          DB_USER: ${{ env.POSTGRES_USER }}
-          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          DB_HOST: ${{ env.POSTGRES_HOST }}
-          DB_PORT: ${{ env.POSTGRES_PORT }}
+          NAME: ${{ env.POSTGRES_DB }}
+          USER: ${{ env.POSTGRES_USER }}
+          PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          HOST: ${{ env.POSTGRES_HOST }}
+          PORT: ${{ env.POSTGRES_PORT }}
 
-      - name: Copy Docker Compose File to Server
+      - name: Copy Project Files to Server
         uses: appleboy/scp-action@v0.1.8
         with:
-          host: 37.60.239.12
+          host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: ./docker-compose.yaml
-          target: ~/ecommerce/docker-compose.yaml
+          source: ".,!.git,!.github,!__pycache__,!*.pyc,!.env"
+          target: ~/ecommerce
+          strip_components: 0
+          overwrite: true
 
       - name: Ensure Directories and Create .env File
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: 37.60.239.12
+          host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
@@ -91,7 +89,7 @@ jobs:
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB=ecommerce_db
-            POSTGRES_HOST=37.60.239.12
+            POSTGRES_HOST=db
             CELERY_BROKER_URL=redis://redis:6380/0
             CELERY_RESULT_BACKEND=redis://redis:6380/0
             EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
@@ -109,10 +107,15 @@ jobs:
       - name: Deploy Services with Docker Compose
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: 37.60.239.12
+          host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/ecommerce
+            # Stop existing containers
             docker-compose down
+            # Build the image on the server and start services
+            docker-compose build --no-cache
             docker-compose up -d
+            # Clean up unused images to save disk space
+            docker image prune -f
