@@ -29,5 +29,6 @@ echo "Collecting static files..."
 gosu appuser python manage.py collectstatic --noinput
 
 # Start the application as appuser (exec replaces shell process)
+# Use python -m gunicorn to ensure gunicorn is found in the Python path
 echo "Starting Gunicorn..."
-exec gosu appuser gunicorn ecommerce.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+exec gosu appuser python -m gunicorn ecommerce.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
