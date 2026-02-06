@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
 
-# Run migrations and collect static files as root (before switching user)
+# Ensure proper permissions for bind-mounted directories
+echo "Setting permissions for staticfiles and media directories..."
+chmod -R 755 /app/staticfiles /app/media 2>/dev/null || true
+
+# Run migrations and collect static files
 echo "Running database migrations..."
 python manage.py migrate
 
