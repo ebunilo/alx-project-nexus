@@ -37,9 +37,8 @@ RUN useradd -m appuser && \
 RUN mkdir -p /app/staticfiles /app/media && \
     chown -R appuser:appuser /app/staticfiles /app/media
 
-# Run entrypoint as root (migrations and collectstatic need to run with permissions)
-# But the actual gunicorn process will run as appuser via exec
-USER root
+# Run the container as the unprivileged appuser
+USER appuser
 
 EXPOSE 8000
 
