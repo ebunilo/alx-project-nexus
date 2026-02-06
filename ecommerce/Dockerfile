@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     zlib1g-dev \
     curl \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -38,17 +39,14 @@ RUN useradd -m appuser && \
 RUN mkdir -p /app/staticfiles /app/media && \
     chown -R appuser:appuser /app/staticfiles /app/media
 
-# Ensure proper permissions for staticfiles and media directories
-RUN chmod -R 755 /app/staticfiles /app/media
-
-# Run the container as the unprivileged appuser
-USER appuser
+# Note: Container starts as root, entrypoint handles permission fixes
+# then switches to appuser using gosu for security
 
 EXPOSE 8000
 
-# Healthcheck (adjust the URL if needed)
+# Healthcheck (uses internal container port 8000)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:${DJANGO_PORT}/ || exit 1
+  CMD curl -f http://localhost:8000/ || exit 1
 
 # Set the entrypoint to the docker-entrypoint.sh script
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

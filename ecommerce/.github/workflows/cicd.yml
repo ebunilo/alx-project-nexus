@@ -84,14 +84,18 @@ jobs:
             DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }}
             DEBUG=False
             ALLOWED_HOSTS=ecommerce.igwilo.com,www.ecommerce.igwilo.com
-            DJANGO_PORT=8010
-            REDIS_PORT=6380
+            DJANGO_PORT=8000
+            DJANGO_HOST_PORT=8010
+            REDIS_PORT=6379
+            REDIS_HOST_PORT=6380
             POSTGRES_USER=${{ secrets.POSTGRES_USER }}
             POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
             POSTGRES_DB=ecommerce_db
             POSTGRES_HOST=db
-            CELERY_BROKER_URL=redis://redis:6380/0
-            CELERY_RESULT_BACKEND=redis://redis:6380/0
+            POSTGRES_PORT=5432
+            POSTGRES_HOST_PORT=5434
+            CELERY_BROKER_URL=redis://redis:6379/0
+            CELERY_RESULT_BACKEND=redis://redis:6379/0
             EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
             EMAIL_HOST=${{ secrets.EMAIL_HOST }}
             EMAIL_PORT=587
@@ -99,6 +103,10 @@ jobs:
             EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
             EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
             DEFAULT_FROM_EMAIL=noreply@igwilo.com
+            FRONTEND_URL=https://ecommerce.igwilo.com
+            CHAPA_SECRET_KEY=${{ secrets.CHAPA_SECRET_KEY }}
+            CORS_ALLOW_ALL_ORIGINS=False
+            CORS_ALLOWED_ORIGINS=https://igwilo.com,https://www.igwilo.com,https://ecommerce.igwilo.com
             EOF
 
             # Secure the .env file
