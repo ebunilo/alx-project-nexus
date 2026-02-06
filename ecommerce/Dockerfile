@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg-dev \
     zlib1g-dev \
     curl \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -38,8 +39,8 @@ RUN useradd -m appuser && \
 RUN mkdir -p /app/staticfiles /app/media && \
     chown -R appuser:appuser /app/staticfiles /app/media
 
-# Run the container as the unprivileged appuser
-USER appuser
+# Note: Container starts as root, entrypoint handles permission fixes
+# then switches to appuser using gosu for security
 
 EXPOSE 8000
 
