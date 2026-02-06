@@ -1,4 +1,5 @@
 .venv
 .env
+ecommerce.igwilo.conf
 __pycache__/
 *.pyc
