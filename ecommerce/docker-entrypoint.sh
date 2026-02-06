@@ -3,7 +3,7 @@ set -e
 
 # If a command is passed, run it as appuser (skip permission fixes)
 if [ $# -gt 0 ]; then
-    echo "Running custom command: $*"
+    echo "Running custom command as appuser..."
     exec gosu appuser "$@"
 fi
 
