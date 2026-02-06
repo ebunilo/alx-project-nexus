@@ -9,7 +9,7 @@ find /app/staticfiles /app/media -type f -exec chmod 644 {} \;
 
 # If a command is passed, run it as appuser
 if [ $# -gt 0 ]; then
-    echo "Running custom command: $@"
+    echo "Running custom command: $1"
     exec gosu appuser "$@"
 fi
 
