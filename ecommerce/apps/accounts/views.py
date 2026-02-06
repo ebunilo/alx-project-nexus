@@ -14,6 +14,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from django.conf import settings
 from rest_framework_simplejwt.tokens import RefreshToken
 from .tasks import send_password_reset_email
 
@@ -143,7 +144,7 @@ class PasswordResetView(APIView):
         # Generate password reset token
         token = default_token_generator.make_token(user)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
-        reset_url = f"https://example.com/reset-password/{uid}/{token}/"
+        reset_url = f"{settings.FRONTEND_URL}/reset-password/{uid}/{token}/"
 
         # Send the email asynchronously using Celery
         send_password_reset_email.delay(email, reset_url)
