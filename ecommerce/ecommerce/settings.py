@@ -38,7 +38,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 # This tells Django the request came over HTTPS
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-# Use HTTPS for schema generation when behind proxy
+# Use X-Forwarded-Host from the proxy for the request host (e.g. for URL/schema generation)
 USE_X_FORWARDED_HOST = True
 
 
