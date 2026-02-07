@@ -34,12 +34,20 @@ DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
-# Trust X-Forwarded-Proto header from reverse proxy (Nginx)
-# This tells Django the request came over HTTPS
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# Reverse proxy settings
+# Only enable when running behind a properly configured reverse proxy (e.g., Nginx)
+# that sanitizes/strips X-Forwarded-Proto and X-Forwarded-Host headers from clients.
+# WARNING: Enabling without a trusted proxy allows clients to spoof these headers.
+BEHIND_PROXY = env.bool('BEHIND_PROXY', default=False)
 
-# Use X-Forwarded-Host from the proxy for the request host (e.g. for URL/schema generation)
-USE_X_FORWARDED_HOST = True
+if BEHIND_PROXY:
+    # Trust X-Forwarded-Proto header from reverse proxy (Nginx)
+    # This tells Django the request came over HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Use X-Forwarded-Host from the proxy for the request host
+    # (e.g., for URL/schema generation)
+    USE_X_FORWARDED_HOST = True
 
 
 # Application definition
