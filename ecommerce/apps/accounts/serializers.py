@@ -64,14 +64,20 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         
         # Create initial address if street_line1 is provided
         if street_line1:
+            from django.conf import settings
             from .models import Country
-            # Get a default country or create one if it doesn't exist
+            
+            # Get default country from settings or use a fallback
+            default_country_code = getattr(settings, 'DEFAULT_COUNTRY_CODE', 'NG')
+            default_country_name = getattr(settings, 'DEFAULT_COUNTRY_NAME', 'Nigeria')
+            
+            # Get or create the default country
             default_country, _ = Country.objects.get_or_create(
-                code='NG',
+                code=default_country_code,
                 defaults={
-                    'name': 'Nigeria',
-                    'phone_code': '+234',
-                    'currency_code': 'NGN',
+                    'name': default_country_name,
+                    'phone_code': '+234',  # Can be overridden later
+                    'currency_code': 'NGN',  # Can be overridden later
                     'is_active': True
                 }
             )
@@ -79,7 +85,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 user=user,
                 address_type='home',
                 street_line1=street_line1,
-                street_line2=street_line2 if street_line2 else None,
+                street_line2=street_line2,
                 city=None,  # Will be updated later by user
                 postal_code=None,  # Will be updated later by user
                 country_code=default_country,

@@ -229,3 +229,7 @@ CORS_ALLOW_CREDENTIALS = env.bool('CORS_ALLOW_CREDENTIALS', default=True)
 
 # Frontend URL for password reset and other email links
 FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3000')
+
+# Default country for address creation during registration
+DEFAULT_COUNTRY_CODE = env('DEFAULT_COUNTRY_CODE', default='NG')
+DEFAULT_COUNTRY_NAME = env('DEFAULT_COUNTRY_NAME', default='Nigeria')
