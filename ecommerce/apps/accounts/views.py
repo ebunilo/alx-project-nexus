@@ -30,7 +30,7 @@ class UserRegistrationView(APIView):
 
     @swagger_auto_schema(
         operation_summary="Register a new user",
-        operation_description="Create a new user account with email, password, and other details.",
+        operation_description="Create a new user account with email, password, and other details. Optionally provide initial address (street_line1 and street_line2) during registration.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -39,6 +39,8 @@ class UserRegistrationView(APIView):
                 "first_name": openapi.Schema(type=openapi.TYPE_STRING, description="User's first name"),
                 "last_name": openapi.Schema(type=openapi.TYPE_STRING, description="User's last name"),
                 "username": openapi.Schema(type=openapi.TYPE_STRING, description="Optional username"),
+                "street_line1": openapi.Schema(type=openapi.TYPE_STRING, description="Optional: First line of street address"),
+                "street_line2": openapi.Schema(type=openapi.TYPE_STRING, description="Optional: Second line of street address"),
             },
             required=["email", "password"],
         ),

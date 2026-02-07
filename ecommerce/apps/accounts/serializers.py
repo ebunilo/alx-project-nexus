@@ -7,7 +7,8 @@ from typing import Any, Dict
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Address
+from django.conf import settings
+from .models import Address, Country
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.tokens import default_token_generator
@@ -22,14 +23,18 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     Attributes:
         username (CharField): Optional username for the user.
         password (CharField): Password for the user.
+        street_line1 (CharField): Optional first line of street address.
+        street_line2 (CharField): Optional second line of street address.
     """
 
     username = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, validators=[validate_password])
+    street_line1 = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    street_line2 = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'role']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'role', 'street_line1', 'street_line2']
 
     def create(self, validated_data: Dict[str, Any]) -> Any:
         """
@@ -42,6 +47,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         Returns:
             User: The newly created user instance.
         """
+        # Extract address fields if present
+        street_line1 = validated_data.pop('street_line1', None)
+        street_line2 = validated_data.pop('street_line2', None)
+        
         # Remove username if it's blank
         if not validated_data.get('username'):
             validated_data['username'] = validated_data['email']
@@ -53,6 +62,34 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', ''),
             role=validated_data.get('role', User.Roles.CUSTOMER),
         )
+        
+        # Create initial address if street_line1 is provided
+        if street_line1:
+            # Get default country from settings or use a fallback
+            default_country_code = getattr(settings, 'DEFAULT_COUNTRY_CODE', 'NG')
+            default_country_name = getattr(settings, 'DEFAULT_COUNTRY_NAME', 'Nigeria')
+            default_phone_code = getattr(settings, 'DEFAULT_PHONE_CODE', '+234')
+            default_currency_code = getattr(settings, 'DEFAULT_CURRENCY_CODE', 'NGN')
+            
+            # Get or create the default country
+            default_country, _ = Country.objects.get_or_create(
+                code=default_country_code,
+                defaults={
+                    'name': default_country_name,
+                    'phone_code': default_phone_code,
+                    'currency_code': default_currency_code,
+                    'is_active': True
+                }
+            )
+            Address.objects.create(
+                user=user,
+                address_type='home',
+                street_line1=street_line1,
+                street_line2=street_line2,
+                country_code=default_country,
+                is_default=True
+            )
+        
         return user
 
 class UserLoginSerializer(serializers.Serializer):

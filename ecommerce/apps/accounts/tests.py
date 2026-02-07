@@ -367,6 +367,79 @@ class UserRegistrationViewTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_user_registration_with_optional_address(self) -> None:
+        """
+        Test user registration with optional address fields.
+
+        Returns:
+            None
+        """
+        from apps.accounts.models import Country, Address
+        
+        # Create a test country
+        Country.objects.create(
+            code='NG',
+            name='Nigeria',
+            phone_code='+234',
+            currency_code='NGN',
+            is_active=True
+        )
+        
+        data = {
+            'email': 'addressuser@example.com',
+            'password': 'securepassword123',
+            'first_name': 'Address',
+            'last_name': 'User',
+            'username': 'addressuser',
+            'street_line1': '123 Main Street',
+            'street_line2': 'Apt 4B'
+        }
+
+        response = self.client.post(self.url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Verify user was created
+        user = User.objects.get(email='addressuser@example.com')
+        self.assertTrue(user)
+        
+        # Verify address was created
+        address = Address.objects.filter(user=user).first()
+        self.assertIsNotNone(address)
+        self.assertEqual(address.street_line1, '123 Main Street')
+        self.assertEqual(address.street_line2, 'Apt 4B')
+        self.assertTrue(address.is_default)
+
+    def test_user_registration_without_address(self) -> None:
+        """
+        Test user registration without address fields (backward compatibility).
+
+        Returns:
+            None
+        """
+        from apps.accounts.models import Address
+        
+        data = {
+            'email': 'noaddress@example.com',
+            'password': 'securepassword123',
+            'first_name': 'No',
+            'last_name': 'Address',
+            'username': 'noaddress'
+        }
+
+        response = self.client.post(self.url, data)
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        # Verify user was created
+        user = User.objects.get(email='noaddress@example.com')
+        self.assertTrue(user)
+        
+        # Verify no address was created
+        address_count = Address.objects.filter(user=user).count()
+        self.assertEqual(address_count, 0)
+
+
 
 class UserLoginViewTests(APITestCase):
     """
