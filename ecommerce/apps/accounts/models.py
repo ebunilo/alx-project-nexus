@@ -93,7 +93,7 @@ class Address(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
-    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES)
+    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES, default='home')
     contact_name = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     street_line1 = models.CharField(max_length=255)

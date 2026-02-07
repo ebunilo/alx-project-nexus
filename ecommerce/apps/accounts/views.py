@@ -355,7 +355,7 @@ class AddressListCreateView(APIView):
                     description="Set as default address (default: false)"
                 ),
             },
-            required=["address_type", "street_line1", "city", "country_code"],
+            required=["street_line1", "city", "country_code"],
         ),
         responses={
             201: openapi.Response("Address created successfully"),
