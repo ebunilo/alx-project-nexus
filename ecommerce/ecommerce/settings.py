@@ -165,8 +165,9 @@ STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
 
-# In production, use manifest storage for cache busting
-if not DEBUG:
+# In production, optionally use manifest storage for cache busting
+# Set USE_MANIFEST_STORAGE=False if you encounter issues with static file resolution
+if not DEBUG and env.bool('USE_MANIFEST_STORAGE', default=False):
     STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 
