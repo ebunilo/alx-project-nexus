@@ -7,7 +7,8 @@ from typing import Any, Dict
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from .models import Address
+from django.conf import settings
+from .models import Address, Country
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.tokens import default_token_generator
@@ -64,9 +65,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         
         # Create initial address if street_line1 is provided
         if street_line1:
-            from django.conf import settings
-            from .models import Country
-            
             # Get default country from settings or use a fallback
             default_country_code = getattr(settings, 'DEFAULT_COUNTRY_CODE', 'NG')
             default_country_name = getattr(settings, 'DEFAULT_COUNTRY_NAME', 'Nigeria')
