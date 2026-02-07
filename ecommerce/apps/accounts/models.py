@@ -2,6 +2,7 @@
 This module defines the database models for the accounts app.
 """
 
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -90,16 +91,16 @@ class Address(models.Model):
         ('shipping', 'Shipping'),
     ]
 
-    id = models.UUIDField(primary_key=True, default=models.UUIDField, editable=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='addresses')
-    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES)
+    address_type = models.CharField(max_length=20, choices=ADDRESS_TYPES, default='home')
     contact_name = models.CharField(max_length=255, blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     street_line1 = models.CharField(max_length=255)
     street_line2 = models.CharField(max_length=255, blank=True, null=True)
     city = models.CharField(max_length=100)
     state_province = models.CharField(max_length=100, blank=True, null=True)
-    postal_code = models.CharField(max_length=20)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
     country_code = models.ForeignKey(Country, on_delete=models.CASCADE, related_name='addresses')
     is_default = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
