@@ -34,6 +34,13 @@ DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
+# Trust X-Forwarded-Proto header from reverse proxy (Nginx)
+# This tells Django the request came over HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Use HTTPS for schema generation when behind proxy
+USE_X_FORWARDED_HOST = True
+
 
 # Application definition
 
@@ -149,6 +156,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# In production, use manifest storage for cache busting
+if not DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 
 # Custom user model
