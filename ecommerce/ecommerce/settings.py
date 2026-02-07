@@ -233,3 +233,5 @@ FRONTEND_URL = env('FRONTEND_URL', default='http://localhost:3000')
 # Default country for address creation during registration
 DEFAULT_COUNTRY_CODE = env('DEFAULT_COUNTRY_CODE', default='NG')
 DEFAULT_COUNTRY_NAME = env('DEFAULT_COUNTRY_NAME', default='Nigeria')
+DEFAULT_PHONE_CODE = env('DEFAULT_PHONE_CODE', default='+234')
+DEFAULT_CURRENCY_CODE = env('DEFAULT_CURRENCY_CODE', default='NGN')

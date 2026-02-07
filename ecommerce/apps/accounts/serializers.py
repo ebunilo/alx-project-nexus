@@ -70,14 +70,16 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             # Get default country from settings or use a fallback
             default_country_code = getattr(settings, 'DEFAULT_COUNTRY_CODE', 'NG')
             default_country_name = getattr(settings, 'DEFAULT_COUNTRY_NAME', 'Nigeria')
+            default_phone_code = getattr(settings, 'DEFAULT_PHONE_CODE', '+234')
+            default_currency_code = getattr(settings, 'DEFAULT_CURRENCY_CODE', 'NGN')
             
             # Get or create the default country
             default_country, _ = Country.objects.get_or_create(
                 code=default_country_code,
                 defaults={
                     'name': default_country_name,
-                    'phone_code': '+234',  # Can be overridden later
-                    'currency_code': 'NGN',  # Can be overridden later
+                    'phone_code': default_phone_code,
+                    'currency_code': default_currency_code,
                     'is_active': True
                 }
             )
@@ -86,8 +88,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
                 address_type='home',
                 street_line1=street_line1,
                 street_line2=street_line2,
-                city=None,  # Will be updated later by user
-                postal_code=None,  # Will be updated later by user
                 country_code=default_country,
                 is_default=True
             )
