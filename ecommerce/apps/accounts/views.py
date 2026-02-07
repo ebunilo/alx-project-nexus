@@ -122,6 +122,25 @@ class PasswordResetView(APIView):
         post: Sends a password reset email to the user.
     """
 
+    @swagger_auto_schema(
+        operation_summary="Request password reset",
+        operation_description="Send a password reset email to the user's email address.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "email": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="User's email address"
+                ),
+            },
+            required=["email"],
+        ),
+        responses={
+            200: openapi.Response("Password reset email sent"),
+            400: openapi.Response("Email is required"),
+            404: openapi.Response("No user is associated with this email"),
+        },
+    )
     def post(self, request: Request) -> Response:
         """
         Send a password reset email to the user.
@@ -261,18 +280,11 @@ class AddressListCreateView(APIView):
         get: Retrieves all addresses for the authenticated user.
         post: Creates a new address for the authenticated user.
     """
+    permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         operation_summary="List all addresses",
         operation_description="Retrieve all addresses for the authenticated user.",
-        manual_parameters=[
-            openapi.Parameter(
-                "user_id",
-                openapi.IN_QUERY,
-                description="ID of the user whose addresses are being retrieved.",
-                type=openapi.TYPE_STRING,
-            )
-        ],
         responses={
             200: openapi.Response("Addresses retrieved successfully"),
         },
@@ -290,6 +302,61 @@ class AddressListCreateView(APIView):
         # Your existing implementation
         pass
 
+    @swagger_auto_schema(
+        operation_summary="Create a new address",
+        operation_description="Create a new address for the authenticated user.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            properties={
+                "address_type": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Type of address",
+                    enum=["home", "work", "billing", "shipping"]
+                ),
+                "contact_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Name of the contact person (optional)"
+                ),
+                "phone": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Contact phone number (optional)"
+                ),
+                "street_line1": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Street address line 1 (required)"
+                ),
+                "street_line2": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Street address line 2 (optional)"
+                ),
+                "city": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="City name (required)"
+                ),
+                "state_province": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="State or province (optional)"
+                ),
+                "postal_code": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Postal/ZIP code (required)"
+                ),
+                "country_code": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="ISO 3166-1 alpha-2 country code, e.g., 'NG' for Nigeria (required)"
+                ),
+                "is_default": openapi.Schema(
+                    type=openapi.TYPE_BOOLEAN,
+                    description="Set as default address (default: false)"
+                ),
+            },
+            required=["address_type", "street_line1", "city", "postal_code", "country_code"],
+        ),
+        responses={
+            201: openapi.Response("Address created successfully"),
+            400: openapi.Response("Validation error"),
+        },
+    )
     def post(self, request: Request) -> Response:
         """
         Create a new address for the authenticated user.
@@ -342,14 +409,53 @@ class AddressDetailView(APIView):
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
-                "address_type": openapi.Schema(type=openapi.TYPE_STRING, description="Type of address"),
-                "street_line1": openapi.Schema(type=openapi.TYPE_STRING, description="Street address line 1"),
+                "address_type": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Type of address",
+                    enum=["home", "work", "billing", "shipping"]
+                ),
+                "contact_name": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Name of the contact person"
+                ),
+                "phone": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Contact phone number"
+                ),
+                "street_line1": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Street address line 1"
+                ),
+                "street_line2": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Street address line 2"
+                ),
+                "city": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="City name"
+                ),
+                "state_province": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="State or province"
+                ),
+                "postal_code": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="Postal/ZIP code"
+                ),
+                "country_code": openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description="ISO 3166-1 alpha-2 country code, e.g., 'NG' for Nigeria"
+                ),
+                "is_default": openapi.Schema(
+                    type=openapi.TYPE_BOOLEAN,
+                    description="Set as default address"
+                ),
             },
-            required=["address_type", "street_line1"],
         ),
         responses={
             200: openapi.Response("Address updated successfully"),
             400: openapi.Response("Validation error"),
+            404: openapi.Response("Address not found"),
         },
     )
     def put(self, request: Request, pk: str) -> Response:
