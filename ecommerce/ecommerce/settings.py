@@ -34,6 +34,21 @@ DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=[])
 
+# Reverse proxy settings
+# Only enable when running behind a properly configured reverse proxy (e.g., Nginx)
+# that sanitizes/strips X-Forwarded-Proto and X-Forwarded-Host headers from clients.
+# WARNING: Enabling without a trusted proxy allows clients to spoof these headers.
+BEHIND_PROXY = env.bool('BEHIND_PROXY', default=False)
+
+if BEHIND_PROXY:
+    # Trust X-Forwarded-Proto header from reverse proxy (Nginx)
+    # This tells Django the request came over HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+    # Use X-Forwarded-Host from the proxy for the request host
+    # (e.g., for URL/schema generation)
+    USE_X_FORWARDED_HOST = True
+
 
 # Application definition
 
@@ -149,6 +164,10 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# In production, use manifest storage for cache busting
+if not DEBUG:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 
 # Custom user model
