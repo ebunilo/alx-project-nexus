@@ -22,14 +22,18 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     Attributes:
         username (CharField): Optional username for the user.
         password (CharField): Password for the user.
+        street_line1 (CharField): Optional first line of street address.
+        street_line2 (CharField): Optional second line of street address.
     """
 
     username = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, validators=[validate_password])
+    street_line1 = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    street_line2 = serializers.CharField(required=False, allow_blank=True, max_length=255)
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'role']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'role', 'street_line1', 'street_line2']
 
     def create(self, validated_data: Dict[str, Any]) -> Any:
         """
@@ -42,6 +46,10 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         Returns:
             User: The newly created user instance.
         """
+        # Extract address fields if present
+        street_line1 = validated_data.pop('street_line1', None)
+        street_line2 = validated_data.pop('street_line2', None)
+        
         # Remove username if it's blank
         if not validated_data.get('username'):
             validated_data['username'] = validated_data['email']
@@ -53,6 +61,31 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             last_name=validated_data.get('last_name', ''),
             role=validated_data.get('role', User.Roles.CUSTOMER),
         )
+        
+        # Create initial address if street_line1 is provided
+        if street_line1:
+            from .models import Country
+            # Get a default country or create one if it doesn't exist
+            default_country, _ = Country.objects.get_or_create(
+                code='NG',
+                defaults={
+                    'name': 'Nigeria',
+                    'phone_code': '+234',
+                    'currency_code': 'NGN',
+                    'is_active': True
+                }
+            )
+            Address.objects.create(
+                user=user,
+                address_type='home',
+                street_line1=street_line1,
+                street_line2=street_line2 if street_line2 else None,
+                city=None,  # Will be updated later by user
+                postal_code=None,  # Will be updated later by user
+                country_code=default_country,
+                is_default=True
+            )
+        
         return user
 
 class UserLoginSerializer(serializers.Serializer):
