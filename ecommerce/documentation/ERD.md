@@ -262,13 +262,13 @@ CREATE INDEX idx_products_deleted ON products(deleted_at) WHERE deleted_at IS NU
 
 This ER diagram provides a comprehensive blueprint for the database schema, ensuring:
 
-**Data integrity:** Through proper relationships and constraints
+1. **Data integrity:** Through proper relationships and constraints
 
-**Performance:** Through strategic indexing and normalization
+2. **Performance:** Through strategic indexing and normalization
 
-**Scalability:** Through thoughtful design patterns
+3. **Scalability:** Through thoughtful design patterns that accommodate growth and complexity.
 
-**Maintainability:** Through clear entity relationships and documentation
+4. **Maintainability:** Through clear entity relationships and documentation
 
 ## Complete ER Diagram
 
