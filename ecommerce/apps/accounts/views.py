@@ -8,7 +8,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .serializers import UserRegistrationSerializer, UserProfileSerializer, UserLoginSerializer
+from .serializers import (
+    UserRegistrationSerializer, UserProfileSerializer,
+    UserLoginSerializer, AddressSerializer
+)
+from .models import Address
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.tokens import default_token_generator
@@ -299,8 +303,9 @@ class AddressListCreateView(APIView):
         Returns:
             Response: HTTP response with list of addresses.
         """
-        # Your existing implementation
-        pass
+        addresses = Address.objects.filter(user=request.user)
+        serializer = AddressSerializer(addresses, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary="Create a new address",
@@ -339,7 +344,7 @@ class AddressListCreateView(APIView):
                 ),
                 "postal_code": openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description="Postal/ZIP code (required)"
+                    description="Postal/ZIP code (optional)"
                 ),
                 "country_code": openapi.Schema(
                     type=openapi.TYPE_STRING,
@@ -350,7 +355,7 @@ class AddressListCreateView(APIView):
                     description="Set as default address (default: false)"
                 ),
             },
-            required=["address_type", "street_line1", "city", "postal_code", "country_code"],
+            required=["street_line1", "city", "country_code"],
         ),
         responses={
             201: openapi.Response("Address created successfully"),
@@ -367,8 +372,11 @@ class AddressListCreateView(APIView):
         Returns:
             Response: HTTP response with created address or errors.
         """
-        # Your existing implementation
-        pass
+        serializer = AddressSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AddressDetailView(APIView):
@@ -380,6 +388,23 @@ class AddressDetailView(APIView):
         put: Updates a specific address.
         delete: Deletes a specific address.
     """
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self, pk: str, user):
+        """
+        Get address object by pk, ensuring it belongs to the user.
+
+        Args:
+            pk (str): The primary key of the address.
+            user: The authenticated user.
+
+        Returns:
+            Address: The address object or None.
+        """
+        try:
+            return Address.objects.get(pk=pk, user=user)
+        except Address.DoesNotExist:
+            return None
 
     @swagger_auto_schema(
         operation_summary="Retrieve address details",
@@ -400,8 +425,14 @@ class AddressDetailView(APIView):
         Returns:
             Response: HTTP response with address data or not found.
         """
-        # Your existing implementation
-        pass
+        address = self.get_object(pk, request.user)
+        if not address:
+            return Response(
+                {"detail": "Address not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = AddressSerializer(address)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(
         operation_summary="Update address details",
@@ -469,8 +500,17 @@ class AddressDetailView(APIView):
         Returns:
             Response: HTTP response with updated data or errors.
         """
-        # Your existing implementation
-        pass
+        address = self.get_object(pk, request.user)
+        if not address:
+            return Response(
+                {"detail": "Address not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        serializer = AddressSerializer(address, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         operation_summary="Delete an address",
@@ -491,8 +531,14 @@ class AddressDetailView(APIView):
         Returns:
             Response: HTTP response indicating success or not found.
         """
-        # Your existing implementation
-        pass
+        address = self.get_object(pk, request.user)
+        if not address:
+            return Response(
+                {"detail": "Address not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        address.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class AllUsersView(APIView):
