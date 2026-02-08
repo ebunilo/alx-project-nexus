@@ -9,6 +9,11 @@ Usage:
     python manage.py load_countries
     python manage.py load_countries --dry-run
     python manage.py load_countries --deactivate-missing
+    python manage.py load_countries --only-common
+
+Note: --only-common controls which countries are created/updated.
+      --deactivate-missing always uses the FULL pycountry set to determine
+      which countries are invalid, so these flags can be safely combined.
 """
 
 from typing import Dict, Any
@@ -155,8 +160,10 @@ class Command(BaseCommand):
         unchanged_count = 0
         deactivated_count = 0
 
-        # Get all country codes from pycountry
-        pycountry_codes = set()
+        # Build the full set of pycountry codes (used for deactivate-missing)
+        # This must be computed from ALL pycountry entries, not filtered by
+        # --only-common, to avoid accidentally deactivating valid countries.
+        all_pycountry_codes = {c.alpha_2 for c in pycountry.countries}
 
         with transaction.atomic():
             for country in pycountry.countries:
@@ -165,8 +172,6 @@ class Command(BaseCommand):
                 # Skip if only_common and no phone code defined
                 if only_common and code not in PHONE_CODES:
                     continue
-
-                pycountry_codes.add(code)
 
                 country_data = {
                     'name': country.name,
@@ -207,13 +212,13 @@ class Command(BaseCommand):
                         )
                     )
 
-            # Deactivate countries not in pycountry
+            # Deactivate countries not in pycountry (using full set, not filtered)
             if deactivate_missing:
                 existing_codes = set(
                     Country.objects.filter(is_active=True)
                     .values_list('code', flat=True)
                 )
-                missing_codes = existing_codes - pycountry_codes
+                missing_codes = existing_codes - all_pycountry_codes
 
                 for code in missing_codes:
                     if not dry_run:
