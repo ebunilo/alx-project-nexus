@@ -344,7 +344,7 @@ class AddressListCreateView(APIView):
                 ),
                 "postal_code": openapi.Schema(
                     type=openapi.TYPE_STRING,
-                    description="Postal/ZIP code (required)"
+                    description="Postal/ZIP code (optional)"
                 ),
                 "country_code": openapi.Schema(
                     type=openapi.TYPE_STRING,
