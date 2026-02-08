@@ -12,104 +12,106 @@ The Entity-Relationship Diagram (ERD) below illustrates the key entities and the
 
 **User** (1) ── (1) **UserProfile** (One-to-One)
 
-Each user has exactly one profile
+- Each user has exactly one profile
 
-Profile contains extended user information
+- Profile contains extended user information
 
 **User** (1) ── (N) **Address** (One-to-Many)
 
-A user can have multiple addresses
+- A user can have multiple addresses
 
-Addresses can be marked as default shipping/billing
+- Addresses can be marked as default shipping/billing
 
 **Category** (1) ── (N) **Category** (Self-referential)
 
-Categories can have parent categories for hierarchies
+- Categories can have parent categories for hierarchies
 
-Enables nested category structures
+- Enables nested category structures
 
 **Category** (1) ── (N) **Product** (One-to-Many)
 
-Each product belongs to one category
+- Each product belongs to one category
 
-A category can have multiple products
+- A category can have multiple products
 
 **Product** (1) ── (N) **ProductVariant** (One-to-Many)
 
-A product can have multiple variants (colors, sizes)
+- A product can have multiple variants (colors, sizes)
 
-Each variant has its own SKU, price, and inventory
+- Each variant has its own SKU, price, and inventory
 
 **Product** (1) ── (N) **ProductImage** (One-to-Many)
 
-Multiple images per product
+- Multiple images per product
 
-One image can be marked as primary
+- One image can be marked as primary
 
 ### Order Management Relationships:
 
 **User** (1) ── (N) **Order** (One-to-Many)
 
-A user can place multiple orders
+- A user can place multiple orders
 
-Orders reference the user who placed them
+- Orders reference the user who placed them
 
 **Order** (1) ── (N) **OrderItem** (One-to-Many)
 
-Each order contains multiple items
+- Each order contains multiple items
 
-Order items capture the state of products at time of purchase
+- Order items capture the state of products at time of purchase
 
 **Order** (1) ── (1) **Payment** (One-to-One)
 
-Each order has exactly one payment record
+- Each order has exactly one payment record
 
-Payment tracks transaction details
+- Payment tracks transaction details
 
 **Order** (1) ── (1) **OrderShipment** (One-to-One)
 
-Each order has one shipment record
+- Each order has one shipment record
 
-Tracks shipping method and delivery status
+- Tracks shipping method and delivery status
 
 ### Review System Relationships:
 
 **Product** (1) ── (N) **ProductReview** (One-to-Many)
 
-A product can have multiple reviews
+- A product can have multiple reviews
 
-Reviews are linked to specific products
+- Reviews are linked to specific products
 
 **User** (1) ── (N) **ProductReview** (One-to-Many)
 
-A user can write multiple reviews
+- A user can write multiple reviews
 
-Ensures one review per product per user
+- Ensures one review per product per user
 
 **OrderItem** (1) ── (1) **ProductReview** (One-to-One)
 
-Each review can be linked to a specific purchase
+- Each review can be linked to a specific purchase
 
-Enables verified purchase badges
+- Enables verified purchase badges
 
 ### Inventory Management:
+
 **Product** (1) ── (N) **Inventory** (One-to-Many)
 
-A product can be stocked in multiple warehouses
+- A product can be stocked in multiple warehouses
 
-Tracks quantity per location
+- Tracks quantity per location
 
 **Warehouse** (1) ── (N) **Inventory** (One-to-Many)
 
-Each warehouse can store multiple products
+- Each warehouse can store multiple products
 
-Manages stock across locations
+- Manages stock across locations
 
 ## Key Business Rules & Constraints
 
 ### 1. Order Lifecycle Constraints:
 
-```-- Order status progression
+```sql
+-- Order status progression
 CREATE TYPE order_status AS ENUM (
     'pending',
     'processing', 
@@ -131,7 +133,8 @@ CHECK (
 
 ### 2. Inventory Constraints:
 
-```-- Prevent negative inventory
+```sql
+-- Prevent negative inventory
 ALTER TABLE inventory 
 ADD CONSTRAINT non_negative_quantity 
 CHECK (quantity >= 0);
@@ -143,9 +146,10 @@ FOR EACH ROW
 EXECUTE FUNCTION decrement_inventory();
 ```
 
-###3. Review Validation:
+### 3. Review Validation:
 
-```-- One review per product per user
+```sql
+-- One review per product per user
 ALTER TABLE product_reviews
 ADD CONSTRAINT unique_product_user_review 
 UNIQUE (product_id, user_id);
@@ -163,7 +167,8 @@ CHECK (
 
 ### Primary Indexes:
 
-```-- User lookups
+```sql
+-- User lookups
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_users_created ON users(created_at);
 
@@ -184,7 +189,8 @@ CREATE INDEX idx_inventory_low_stock ON inventory(quantity) WHERE quantity < low
 
 ### Composite Indexes:
 
-```-- For product filtering
+```sql
+-- For product filtering
 CREATE INDEX idx_products_filtering ON products(
     category_id, 
     price, 
@@ -211,7 +217,8 @@ CREATE INDEX idx_reviews_product_rating ON product_reviews(
 
 ### Version Control Strategy:
 
-```-- Audit trail for critical tables
+```sql
+-- Audit trail for critical tables
 CREATE TABLE products_audit (
     audit_id UUID PRIMARY KEY,
     product_id UUID NOT NULL,
@@ -231,34 +238,38 @@ CREATE INDEX idx_products_deleted ON products(deleted_at) WHERE deleted_at IS NU
 
 ### 1. Read Optimization:
 
-Frequently accessed data: Cache product details, categories, user sessions
+**Frequently accessed data:** Cache product details, categories, user sessions
 
-Search optimization: Materialized views for product search facets
+**Search optimization:** Materialized views for product search facets
 
-Denormalization: Store calculated fields (average ratings, total sales)
+**Denormalization:** Store calculated fields (average ratings, total sales)
 
 ### 2. Write Optimization:
 
-Batch operations: Bulk inserts for inventory updates
+**Batch operations:** Bulk inserts for inventory updates
 
-Queue processing: Async processing for order fulfillment, email notifications
+**Queue processing:** Async processing for order fulfillment, email notifications
 
-Transaction isolation: Appropriate isolation levels for concurrent updates
+**Transaction isolation:** Appropriate isolation levels for concurrent updates
 
 ### 3. Scalability Patterns:
 
-Sharding strategy: Shard by user_id for user-related data
+**Sharding strategy:** Shard by user_id for user-related data
 
-Read replicas: Separate read replicas for analytics queries
+**Read replicas:** Separate read replicas for analytics queries
 
-Partitioning: Time-based partitioning for orders and audit logs
+**Partitioning:** Time-based partitioning for orders and audit logs
 
 This ER diagram provides a comprehensive blueprint for the database schema, ensuring:
 
-Data integrity through proper relationships and constraints
+**Data integrity:** Through proper relationships and constraints
 
-Performance through strategic indexing and normalization
+**Performance:** Through strategic indexing and normalization
 
-Scalability through thoughtful design patterns
+**Scalability:** Through thoughtful design patterns
 
-Maintainability through clear entity relationships and documentation
+**Maintainability:** Through clear entity relationships and documentation
+
+## Complete ER Diagram
+
+![Complete E-Commerce Platform ERD](images/ERD_complete.svg)
