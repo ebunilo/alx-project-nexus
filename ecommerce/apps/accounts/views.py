@@ -439,50 +439,51 @@ class AddressDetailView(APIView):
         operation_description="Update the details of a specific address by its ID.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
-            properties={
-                "address_type": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Type of address",
-                    enum=["home", "work", "billing", "shipping"]
-                ),
-                "contact_name": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Name of the contact person"
-                ),
-                "phone": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Contact phone number"
-                ),
-                "street_line1": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Street address line 1"
-                ),
-                "street_line2": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Street address line 2"
-                ),
-                "city": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="City name"
-                ),
-                "state_province": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="State or province"
-                ),
-                "postal_code": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="Postal/ZIP code"
-                ),
-                "country_code": openapi.Schema(
-                    type=openapi.TYPE_STRING,
-                    description="ISO 3166-1 alpha-2 country code, e.g., 'NG' for Nigeria"
-                ),
-                "is_default": openapi.Schema(
-                    type=openapi.TYPE_BOOLEAN,
-                    description="Set as default address"
-                ),
-            },
-        ),
+                properties={
+                    "address_type": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Type of address",
+                        enum=["home", "work", "billing", "shipping"]
+                    ),
+                    "contact_name": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Name of the contact person"
+                    ),
+                    "phone": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Contact phone number"
+                    ),
+                    "street_line1": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Street address line 1"
+                    ),
+                    "street_line2": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Street address line 2"
+                    ),
+                    "city": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="City name"
+                    ),
+                    "state_province": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="State or province"
+                    ),
+                    "postal_code": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="Postal/ZIP code"
+                    ),
+                    "country_code": openapi.Schema(
+                        type=openapi.TYPE_STRING,
+                        description="ISO 3166-1 alpha-2 country code, e.g., 'NG' for Nigeria"
+                    ),
+                    "is_default": openapi.Schema(
+                        type=openapi.TYPE_BOOLEAN,
+                        description="Set as default address"
+                    ),
+                },
+                required=[],
+            ),
         responses={
             200: openapi.Response("Address updated successfully"),
             400: openapi.Response("Validation error"),
